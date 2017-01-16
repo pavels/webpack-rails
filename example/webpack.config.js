@@ -59,11 +59,13 @@ if (production) {
     new webpack.optimize.OccurenceOrderPlugin()
   );
 } else {
-  config.devServer = {
-    port: devServerPort,
-    headers: { 'Access-Control-Allow-Origin': '*' }
-  };
-  config.output.publicPath = '//localhost:' + devServerPort + '/webpack/';
+  // For external dev server
+  // config.devServer = {
+  //   port: devServerPort,
+  //   headers: { 'Access-Control-Allow-Origin': '*' }
+  // };
+  // config.output.publicPath = '//localhost:' + devServerPort + '/webpack/';
+
   // Source maps
   config.devtool = 'cheap-module-eval-source-map';
 }

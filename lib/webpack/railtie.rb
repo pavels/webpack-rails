@@ -29,10 +29,12 @@ module Webpack
     # to communicate among each other
     config.webpack.dev_server.manifest_host = 'localhost'
     config.webpack.dev_server.manifest_port = 3808
+    config.webpack.dev_server.remote = false
 
     config.webpack.dev_server.https = false # note - this will use OpenSSL::SSL::VERIFY_NONE
     config.webpack.dev_server.binary = 'node_modules/.bin/webpack-dev-server'
     config.webpack.dev_server.enabled = ::Rails.env.development? || ::Rails.env.test?
+    config.webpack.dev_server.server_options = ""
 
     config.webpack.output_dir = "public/webpack"
     config.webpack.public_path = "webpack"
@@ -41,6 +43,21 @@ module Webpack
 
     rake_tasks do
       load "tasks/webpack.rake"
+    end
+  end
+end
+
+
+# Used for caching manifests
+
+module ActionDispatch
+  class Request
+    def webpack_manifest
+        @webpack_manifest
+    end
+
+    def webpack_manifest=(manifest)
+        @webpack_manifest = manifest
     end
   end
 end

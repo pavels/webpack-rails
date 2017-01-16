@@ -25,8 +25,8 @@ module Webpack
 
       class << self
         # :nodoc:
-        def asset_paths(source)
-          current_manifest = manifest
+        def asset_paths(source, request)
+          current_manifest = manifest(request)
           if current_manifest[:assets].has_key? source
             return current_manifest[:assets][source]
           else
@@ -34,8 +34,8 @@ module Webpack
           end
         end
 
-        def image_path(source)
-          current_manifest = manifest
+        def image_path(source, request)
+          current_manifest = manifest(request)
           if current_manifest[:images].has_key? source
             return current_manifest[:images][source]
           else
@@ -45,19 +45,20 @@ module Webpack
 
         private
 
-        def manifest
+        def manifest(request)
           if ::Rails.configuration.webpack.dev_server.enabled
             # Don't cache if we're in dev server mode, manifest may change ...
-            load_manifest
+            return request.webpack_manifest if request.webpack_manifest
+            request.webpack_manifest = load_manifest(request)
           else
             # ... otherwise cache at class level, as JSON loading/parsing can be expensive
-            @manifest ||= load_manifest
+            @manifest ||= load_manifest(request)
           end
         end
 
-        def load_manifest
+        def load_manifest(request)
           data = if ::Rails.configuration.webpack.dev_server.enabled
-            load_dev_server_manifest
+            load_dev_server_manifest(request)
           else
             load_static_manifest
           end
@@ -87,11 +88,22 @@ module Webpack
           return parsed_manifest
         end
 
-        def load_dev_server_manifest
-          host = ::Rails.configuration.webpack.dev_server.manifest_host
-          port = ::Rails.configuration.webpack.dev_server.manifest_port
+        def load_dev_server_manifest(request)
+          host = nil
+          port = nil
+          https = false
+
+          if ::Rails.configuration.webpack.dev_server.remote
+            host = ::Rails.configuration.webpack.dev_server.manifest_host
+            port = ::Rails.configuration.webpack.dev_server.manifest_port
+            https = ::Rails.configuration.webpack.dev_server.https
+          else
+            host = request.host
+            port = request.port
+          end
+
           http = Net::HTTP.new(host, port)
-          http.use_ssl = ::Rails.configuration.webpack.dev_server.https
+          http.use_ssl = https
           http.verify_mode = OpenSSL::SSL::VERIFY_NONE
           http.get(dev_server_path).body
         rescue => e
@@ -115,9 +127,6 @@ module Webpack
           "/#{::Rails.configuration.webpack.public_path}/#{::Rails.configuration.webpack.manifest_filename}"
         end
 
-        def dev_server_url
-          "http://#{::Rails.configuration.webpack.dev_server.host}:#{::Rails.configuration.webpack.dev_server.port}#{dev_server_path}"
-        end
       end
     end
   end

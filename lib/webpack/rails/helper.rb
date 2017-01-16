@@ -7,7 +7,7 @@ module Webpack
     module Helper
 
       def webpack_real_path(path)
-        if ::Rails.configuration.webpack.dev_server.enabled
+        if ::Rails.configuration.webpack.dev_server.remote
           port = ::Rails.configuration.webpack.dev_server.port
           protocol = ::Rails.configuration.webpack.dev_server.https ? 'https' : 'http'
 
@@ -29,8 +29,9 @@ module Webpack
       # not exist.
       def webpack_asset_paths(source, extension: nil)
         return "" unless source.present?
+        return "" unless request
 
-        paths = Webpack::Rails::Manifest.asset_paths(source)
+        paths = Webpack::Rails::Manifest.asset_paths(source, request)
         paths = paths.select { |p| p.ends_with? ".#{extension}" } if extension
         paths.map! { |p| webpack_real_path(p) }
 
@@ -39,8 +40,9 @@ module Webpack
 
       def compute_asset_path(path, options = {})
         return "" unless path.present?
+        return "" unless request
 
-        image_path =  Webpack::Rails::Manifest.image_path(path)
+        image_path =  Webpack::Rails::Manifest.image_path(path, request)
         return webpack_real_path(image_path)
       end
 
