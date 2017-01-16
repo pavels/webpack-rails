@@ -26,25 +26,24 @@ module Webpack
       class << self
         # :nodoc:
         def asset_paths(source)
-          raise WebpackError, manifest["errors"] unless manifest_bundled?
-
-          paths = manifest["assetsByChunkName"][source]
-          if paths
-            # Can be either a string or an array of strings.
-            # Do not include source maps as they are not javascript
-            [paths].flatten.reject { |p| p =~ /.*\.map$/ }.map do |p|
-              "/#{::Rails.configuration.webpack.public_path}/#{p}"
-            end
+          current_manifest = manifest
+          if current_manifest[:assets].has_key? source
+            return current_manifest[:assets][source]
           else
             raise EntryPointMissingError, "Can't find entry point '#{source}' in webpack manifest"
           end
         end
 
-        private
-
-        def manifest_bundled?
-          !manifest["errors"].any? { |error| error.include? "Module build failed" }
+        def image_path(source)
+          current_manifest = manifest
+          if current_manifest[:images].has_key? source
+            return current_manifest[:images][source]
+          else
+            raise EntryPointMissingError, "Can't find image '#{source}' in webpack manifest"
+          end          
         end
+
+        private
 
         def manifest
           if ::Rails.configuration.webpack.dev_server.enabled
@@ -62,7 +61,30 @@ module Webpack
           else
             load_static_manifest
           end
-          JSON.parse(data)
+          manifest_json = JSON.parse(data)
+
+          if manifest_json["errors"].any? { |error| error.include? "Module build failed" }
+            raise WebpackError, manifest_json["errors"]
+          end
+
+          parsed_manifest = { assets: {}, images: {} }
+
+          # Assets
+          manifest_json["assetsByChunkName"].each do |key, paths|
+            parsed_manifest[:assets][key] = [paths].flatten.reject { |p| p =~ /.*\.map$/ }.map do |p|
+              "/#{::Rails.configuration.webpack.public_path}/#{p}"
+            end
+          end
+
+          manifest_json["modules"].each do |mod|
+            base_path = "./#{::Rails.configuration.webpack.image_dir}/"
+            if mod["name"].starts_with?(base_path)
+              image_base_name = mod["name"].to_s[base_path.length .. -1]
+              parsed_manifest[:images][image_base_name] = "/#{::Rails.configuration.webpack.public_path}/#{mod["assets"].first}"
+            end
+          end
+
+          return parsed_manifest
         end
 
         def load_dev_server_manifest

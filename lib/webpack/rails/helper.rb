@@ -5,6 +5,21 @@ module Webpack
   module Rails
     # Asset path helpers for use with webpack
     module Helper
+
+      def webpack_real_path(path)
+        if ::Rails.configuration.webpack.dev_server.enabled
+          port = ::Rails.configuration.webpack.dev_server.port
+          protocol = ::Rails.configuration.webpack.dev_server.https ? 'https' : 'http'
+
+          host = ::Rails.configuration.webpack.dev_server.host
+          host = instance_eval(&host) if host.respond_to?(:call)
+
+          return "#{protocol}://#{host}:#{port}#{path}"
+        end
+
+        path
+      end
+
       # Return asset paths for a particular webpack entry point.
       #
       # Response may either be full URLs (eg http://localhost/...) if the dev server
@@ -17,21 +32,18 @@ module Webpack
 
         paths = Webpack::Rails::Manifest.asset_paths(source)
         paths = paths.select { |p| p.ends_with? ".#{extension}" } if extension
-
-        port = ::Rails.configuration.webpack.dev_server.port
-        protocol = ::Rails.configuration.webpack.dev_server.https ? 'https' : 'http'
-
-        host = ::Rails.configuration.webpack.dev_server.host
-        host = instance_eval(&host) if host.respond_to?(:call)
-
-        if ::Rails.configuration.webpack.dev_server.enabled
-          paths.map! do |p|
-            "#{protocol}://#{host}:#{port}#{p}"
-          end
-        end
+        paths.map! { |p| webpack_real_path(p) }
 
         paths
       end
+
+      def compute_asset_path(path, options = {})
+        return "" unless path.present?
+
+        image_path =  Webpack::Rails::Manifest.image_path(path)
+        return webpack_real_path(image_path)
+      end
+
     end
   end
 end

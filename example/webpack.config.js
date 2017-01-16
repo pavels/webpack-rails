@@ -35,12 +35,13 @@ var config = {
   plugins: [
     // must match config.webpack.manifest_filename
     new StatsPlugin('manifest.json', {
-      // We only need assetsByChunkName
-      chunkModules: false,
-      source: false,
+      assets: true,
       chunks: false,
-      modules: false,
-      assets: true
+      chunkModules: false,
+      chunkOrigins: false,
+      source: false,
+      modules: true,
+      reasons: false
     })]
 };
 

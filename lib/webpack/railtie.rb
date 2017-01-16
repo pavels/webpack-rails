@@ -36,7 +36,8 @@ module Webpack
 
     config.webpack.output_dir = "public/webpack"
     config.webpack.public_path = "webpack"
-    config.webpack.manifest_filename = "manifest.json"
+    config.webpack.image_dir = "webpack/images"
+    config.webpack.manifest_filename = "manifest.json"    
 
     rake_tasks do
       load "tasks/webpack.rake"
