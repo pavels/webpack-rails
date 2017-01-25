@@ -16,13 +16,7 @@ module WebpackDevServer
       end
 
       def webpack_opts
-        port = WebpackDevServer.curb_available ? socket_path : config.dev_server.manifest_port
-
-         "--host #{config.dev_server.manifest_host} --port #{port} #{config.dev_server.server_options} --config #{config.config_file}"
-      end
-
-      def webpack_host
-        "http://#{config.dev_server.manifest_host}:#{config.dev_server.manifest_port}"
+         "--host localhost --port #{socket_path} #{config.dev_server.server_options} --config #{config.config_file}"
       end
 
       def mutex
