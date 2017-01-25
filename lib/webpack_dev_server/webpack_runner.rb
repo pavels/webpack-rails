@@ -4,7 +4,7 @@ module WebpackDevServer
   class WebpackRunner
     class << self
       def socket_path
-        File.expand_path('tmp/webpack.socket')
+        File.expand_path(config.dev_server.socket_path)
       end
 
       def config

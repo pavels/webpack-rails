@@ -35,6 +35,7 @@ module Webpack
     config.webpack.dev_server.binary = 'node_modules/.bin/webpack-dev-server'
     config.webpack.dev_server.enabled = ::Rails.env.development? || ::Rails.env.test?
     config.webpack.dev_server.server_options = ""
+    config.webpack.dev_server.socket_path = "tmp/webpack.socket"
 
     config.webpack.output_dir = "public/webpack"
     config.webpack.public_path = "webpack"
