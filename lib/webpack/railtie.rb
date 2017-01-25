@@ -32,7 +32,7 @@ module Webpack
     config.webpack.dev_server.remote = false
 
     config.webpack.dev_server.https = false # note - this will use OpenSSL::SSL::VERIFY_NONE
-    config.webpack.dev_server.binary = 'node_modules/bin/webpack-dev-server'
+    config.webpack.dev_server.binary = 'node_modules/.bin/webpack-dev-server'
     config.webpack.dev_server.enabled = ::Rails.env.development? || ::Rails.env.test?
     config.webpack.dev_server.server_options = ""
 
