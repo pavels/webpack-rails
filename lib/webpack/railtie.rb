@@ -1,6 +1,7 @@
 require 'rails'
 require 'rails/railtie'
 require 'webpack/rails/helper'
+require 'webpack/rails/image_helper'
 
 module Webpack
   # :nodoc:
@@ -8,6 +9,9 @@ module Webpack
     config.after_initialize do
       ActiveSupport.on_load(:action_view) do
         include Webpack::Rails::Helper
+        if ::Rails.configuration.webpack.image_support
+            include Webpack::Rails::ImageHelper
+        end
       end
     end
 
@@ -40,7 +44,9 @@ module Webpack
     config.webpack.output_dir = "public/webpack"
     config.webpack.public_path = "webpack"
     config.webpack.image_dir = "webpack/images"
-    config.webpack.manifest_filename = "manifest.json"    
+    config.webpack.manifest_filename = "manifest.json"
+
+    config.webpack.image_support = false
 
     rake_tasks do
       load "tasks/webpack.rake"
