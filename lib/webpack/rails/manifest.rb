@@ -77,11 +77,13 @@ module Webpack
             end
           end
 
-          manifest_json["modules"].each do |mod|
-            base_path = "./#{::Rails.configuration.webpack.image_dir}/"
-            if mod["name"].starts_with?(base_path)
-              image_base_name = mod["name"].to_s[base_path.length .. -1]
-              parsed_manifest[:images][image_base_name] = "/#{::Rails.configuration.webpack.public_path}/#{mod["assets"].first}"
+          if manifest_json["modules"]
+            manifest_json["modules"].each do |mod|
+              base_path = "./#{::Rails.configuration.webpack.image_dir}/"
+              if mod["name"] && mod["name"].starts_with?(base_path)
+                image_base_name = mod["name"].to_s[base_path.length .. -1]
+                parsed_manifest[:images][image_base_name] = "/#{::Rails.configuration.webpack.public_path}/#{mod["assets"].first}"
+              end
             end
           end
 
