@@ -15,6 +15,9 @@ module WebpackDevServer
           info "Proxying #{path}"
           proxy( path )
         else
+          if @app.nil?
+            raise "Can't proxy #{path} without context"
+          end
           @app.call(env)
         end
       end
