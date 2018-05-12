@@ -7,6 +7,7 @@ module Webpack
   # :nodoc:
   class Railtie < ::Rails::Railtie
     config.after_initialize do
+      WebpackDevServer::WebpackRunner.run if ( ::Rails.configuration.webpack.dev_server.enabled && !::Rails.configuration.webpack.dev_server.remote )      
       ActiveSupport.on_load(:action_view) do
         include Webpack::Rails::Helper
         if ::Rails.configuration.webpack.image_support
